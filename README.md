@@ -34,7 +34,7 @@ The API endpoints test for the following :
     
     
     
-
+[![Build Status](https://travis-ci.org/josekang/api-endpoints.svg?branch=develop)](https://travis-ci.org/josekang/api-endpoints)
 
 
      
