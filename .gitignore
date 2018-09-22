@@ -1,0 +1,8 @@
+.pytest_cache/
+__pycache__/
+README.md/
+.coverage/
+htmlcov/
+my-env1/
+.coverage
+.pytest_cache/
