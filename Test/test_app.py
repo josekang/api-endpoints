@@ -34,7 +34,7 @@ class TestFlaskApi(unittest.TestCase):
                        data=json.dumps(data),
                        content_type='application/json')
         anyname = json.loads(response.get_data())
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 201)
 
     def test_get_one_two(self):
         data = {
@@ -60,7 +60,7 @@ class TestFlaskApi(unittest.TestCase):
                        content_type='application/json')
         response = self.app.get(BASE_URL+'/2')
         data = json.loads(response.get_data())
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 200)
      
     def test_order_not_exist(self):
         response = self.app.get(BAD_ORDER_URL)
@@ -83,14 +83,18 @@ class TestFlaskApi(unittest.TestCase):
         response = self.app.put(BAD_ORDER_URL,
                                 data=json.dumps(order),
                                 content_type='application/json')
-        self.assertEqual(response.status_code, 405)
+        self.assertEqual(response.status_code, 400)
 
     def test_delete(self):
-        response = self.app.delete(BASE_URL + '/0',
+        response1 = self.app.post('/api/v1/orders',
+                data=json.dumps({
+                    'name':"one", 
+                    "value":200,
+                    "status":"pending"}),
                                 content_type='application/json')
-        self.assertEqual(response.status_code,405)
-        response = self.app.delete(BAD_ORDER_URL)
-        self.assertEqual(response.status_code, 405)
+        response = self.app.delete('/api/v1/orders/1',
+                                content_type='application/json')
+        self.assertEqual(response.status_code,200)
 
     def tearDown(self):
         # reset app.items to initial state

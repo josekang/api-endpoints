@@ -16,11 +16,7 @@ def _record_exists(name):
 @app.errorhandler(404)
 def not_found(error):
     return make_response(jsonify({'error': NOT_FOUND}), 404)
-
-@app.errorhandler(400)
-def bad_request(error):
-    return make_response(jsonify({'error': BAD_REQUEST}), 400)
-
+    
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -36,69 +32,55 @@ def get_order(id):
     if orders:
         order = _get_order(id)
         if not order:
-            abort(404)
+            return jsonify({'message':"Order does not exist"}),404
         return jsonify({'order': order}),200
     else: abort(404)
 
 @app.route('/api/v1/orders', methods=['POST'])
 def create_order():
     parser = reqparse.RequestParser()
-    parser.add_argument("id",
-            type=int, 
-            required=True,
-    )
     parser.add_argument("name",
             type=str,
-            required=True,
+            required=True
     )
     parser.add_argument("value",
             type=int,
-            required=True,
+            required=True
     )
     parser.add_argument("status",
-            type=int)
+            type=str)
     data = parser.parse_args()
+    id = (len(orders))+1
+    data['id']=id
     orders.append(data)
-    return jsonify({'order': data}), 200
+    return jsonify({'order': data}), 201
 
-@app.route('/api/v1/orders', methods=['PUT'])
-def update_order():
+@app.route('/api/v1/orders/<int:order_id>', methods=['PUT'])
+def update_order(order_id):
     parser = reqparse.RequestParser()
-    parser.add_argument("id",
-            type=int,
-            required=True,
-    )
     parser.add_argument("status",
-            type=int,
+            type=str,
             required=True,
     )
+    
     data = parser.parse_args()
     status = data['status']
-    if type(status) is not int:
-        abort(400)                         
+    if type(status) is not str:
+        return jsonify({'message':"Make sure the status is a string."}), 400                   
     for order in orders:
-        if order['id']==data['id']:
-            order['status']=data['status']
+        if order['id']==order_id:
+            order['status']=status
             return jsonify({'order': order},200)
-        else: abort(404)    
+        return jsonify({'message':"order does not exist."}),404
 
-@app.route('/api/v1/orders', methods=['DELETE'])
-def delete_order():
-    parser = reqparse.RequestParser()
-    parser.add_argument("id",
-            type=int,
-            required=True,
-    )
-    data = parser.parse_args()
-    if orders:
-        for i,order in enumerate(orders):
-            if order['id']==data['id']:
-                del_order=order
-                del  orders[i]
-                return jsonify({'order': del_order},200)
-            else: abort(404)
-    else:
-        return jsonify({'error': 'No Items Left'},200)
-
-if __name__ == '__main__':
-    main()
+@app.route('/api/v1/orders/<int:order_id>', methods=['DELETE'])
+def delete_order(order_id):
+    if order_id:
+        for order in orders:
+            if order['id']==order_id:
+                orders.remove(order)
+                return jsonify({'message':"Order successfully deleted."}),200
+            return jsonify({'message':"order does not exist."}),404
+    
+    if __name__ == '__main__':
+         app.run(debug=True)
